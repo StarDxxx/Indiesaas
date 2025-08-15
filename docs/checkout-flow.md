@@ -1,0 +1,122 @@
+# Standard Integration
+
+> Learn how to receive payments on your application
+
+## Prerequisites
+
+To get the most out of this guide, you'll need to:
+
+* **Create an account on Creem.io**
+* **Have your API key ready**
+
+## 1. Create a product
+
+Go over to the [products tab](https://creem.io/dashboard/products) and create a product.
+You can add a name, description, and price to your product. Optionally you can also add a picture to your product that will be shown to users.
+
+<AccordionGroup>
+  <Accordion icon="browser" title="Product page">
+    <img style={{ borderRadius: '0.5rem' }} src="https://nucn5fajkcc6sgrd.public.blob.vercel-storage.com/add-product-B0Khh16pSFp3DpwsuBrrExvlwovhMq.png" />
+  </Accordion>
+
+  <Accordion icon="file-spreadsheet" title="Adding product details">
+    <img style={{ borderRadius: '0.5rem' }} src="https://nucn5fajkcc6sgrd.public.blob.vercel-storage.com/Screenshot%202024-10-03%20at%2015.51.45-arQ1KogX03W1cGCmTgMBSJFd8d8QYR.png" />
+  </Accordion>
+</AccordionGroup>
+
+## 2 Create a checkout session
+
+Once your product is created, you can copy the product ID by clicking on the product options and selecting "Copy ID".
+
+Now grab your api-key and create a checkout session by sending a POST request to the following endpoint:
+
+<Warning>
+  If you are using test mode, make sure to use the test mode API endpoint. See the [Test Mode](/test-mode) page for more details.
+</Warning>
+
+<CodeGroup>
+  ```bash getCheckout.sh
+  curl -X POST https://api.creem.io/v1/checkouts \
+    -H "x-api-key: creem_123456789"
+    -D '{"product_id": "prod_6tW66i0oZM7w1qXReHJrwg"}'
+  ```
+
+  ```javascript getCheckout.js
+      const redirectUrl = await axios.post(
+        `https://api.creem.io/v1/checkouts`,
+          {
+            product_id: 'prod_6tW66i0oZM7w1qXReHJrwg',
+          },
+          {
+            headers: { "x-api-key": `creem_123456789` },
+          },
+      );
+  ```
+</CodeGroup>
+
+<Tip>
+  Read more about all attributes you can pass to a checkout sesssion [here](/learn/checkout-session/introduction)
+</Tip>
+
+## 3. Redirect user to checkout url
+
+Once you have created a checkout session, you will receive a checkout URL in the response.
+
+Redirect the user to this URL and that is it! You have successfully created a checkout session and received your first payment!
+
+<AccordionGroup>
+  <Accordion icon="table-tree" title="Track payments with a request ID">
+    When creating a checkout-session, you can optionally add a `request_id` parameter to track the payment.
+    This parameter will be sent back to you in the response and in the webhook events.
+    Use this parameter to track the payment or user in your system.
+  </Accordion>
+
+  <Accordion icon="location-crosshairs" title="Set a success URL on the checkout session">
+    After successfully completing the payment, the user will be automatically redirected to the URL you have set on the product creation.
+    You can bypass this setting by setting a success URL on the checkout session request by adding the `success_url` parameter.
+    The user will always be redirected with the following query parameters:
+
+    * `session_id`: The ID of the checkout session
+    * `product_id`: The ID of the product
+    * `status`: The status of the payment
+    * `request_id`: The request ID of the payment that you optionally have sent
+  </Accordion>
+</AccordionGroup>
+
+## 4. Receive payment data on your Return URL
+
+A return URL will always contain the following query parameters, and will look like the following:
+
+<Tip>
+  `https://yourwebsite.com/your-return-path?checkout_id=ch_1QyIQDw9cbFWdA1ry5Qc6I&order_id=ord_4ucZ7Ts3r7EhSrl5yQE4G6&customer_id=cust_2KaCAtu6l3tpjIr8Nr9XOp&subscription_id=sub_ILWMTY6uBim4EB0uxK6WE&product_id=prod_6tW66i0oZM7w1qXReHJrwg&signature=044bd1691d254c4ad4b31b7f246330adf09a9f07781cd639979a288623f4394c?`
+
+  You can read more about [Return Urls](/learn/checkout-session/return-url) here.
+</Tip>
+
+| Query parameter  | Description                                                                    |
+| ---------------- | ------------------------------------------------------------------------------ |
+| checkout\_id     | The ID of the checkout session created for this payment.                       |
+| order\_id        | The ID of the order created after successful payment.                          |
+| customer\_id     | The customer ID, based on the email that executed the successful payment.      |
+| subscription\_id | The subscription ID of the product.                                            |
+| product\_id      | The product ID that the payment is related to.                                 |
+| request\_id      | **Optional** The request ID you provided when creating this checkout session.  |
+| signature        | All previous parameters signed by creem using your API-key, verifiable by you. |
+
+<Warning>
+  We also encourage reading on how you can verify Creem signature on return URLs [here](/learn/checkout-session/return-url).
+</Warning>
+
+### Expanding your integration
+
+You can also use webhooks to check payment data dynamically in your application, without the need to wait for the return URLs, or have the user redirected to your application website.
+
+<CardGroup>
+  <Card title="Return URLs" icon="globe-pointer" href="/learn/checkout-session/return-url">
+    Understand what you will receive when users complete a payment and get redirected back to your website.
+  </Card>
+
+  <Card title="Webhooks and Events" icon="square-code" href="/learn/webhooks/introduction">
+    Set up webhooks to receive updates on your application automatically.
+  </Card>
+</CardGroup>
